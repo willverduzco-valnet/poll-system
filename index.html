@@ -91,6 +91,13 @@
   <!-- Auth gate -->
   <div id="auth-section" class="card">
     <p>Sign in with your authorized Google account to access this tool.</p>
+    <div style="margin-bottom:20px;">
+      <label style="display:block;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.4px;color:#555;margin-bottom:8px;">Poll Engine</label>
+      <div style="display:flex;gap:8px;justify-content:center;">
+        <button id="btn-engine-cf" onclick="selectEngine('cf')" style="flex:1;max-width:200px;padding:10px 16px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;background:#1a73e8;color:#fff;border:1px solid #1a73e8;">Cloudflare</button>
+        <button id="btn-engine-gas" onclick="selectEngine('gas')" style="flex:1;max-width:200px;padding:10px 16px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;background:#fff;color:#333;border:1px solid #ddd;">Google Apps Script</button>
+      </div>
+    </div>
     <button class="btn-google" onclick="handleSignIn()">
       <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="">
       Sign in with Google
@@ -118,9 +125,26 @@
 (function() {
   // CONFIG — these are not sensitive (no deployment URL here)
   var GCP_CLIENT_ID = '1026548183269-jebk6532n8767q35il7ruft9fb4rmar6.apps.googleusercontent.com';
-  var DRIVE_FILE_ID = '1b7E-eNWSsQqlceJsMBOLhI9chhRkue1a';
+  var ENGINE_FILES = {
+    cf:  '1K71ZfrkNoZg7FIuEUeZgLY7gOC3n643n',  // pollgenerator-cf.js
+    gas: '1b7E-eNWSsQqlceJsMBOLhI9chhRkue1a'   // pollgenerator.js
+  };
 
+  var selectedEngine = 'cf';
   var tokenClient;
+
+  window.selectEngine = function(engine) {
+    selectedEngine = engine;
+    var btnCf = document.getElementById('btn-engine-cf');
+    var btnGas = document.getElementById('btn-engine-gas');
+    if (engine === 'cf') {
+      btnCf.style.background = '#1a73e8'; btnCf.style.color = '#fff'; btnCf.style.borderColor = '#1a73e8';
+      btnGas.style.background = '#fff'; btnGas.style.color = '#333'; btnGas.style.borderColor = '#ddd';
+    } else {
+      btnGas.style.background = '#1a73e8'; btnGas.style.color = '#fff'; btnGas.style.borderColor = '#1a73e8';
+      btnCf.style.background = '#fff'; btnCf.style.color = '#333'; btnCf.style.borderColor = '#ddd';
+    }
+  };
 
   window.handleSignIn = function() {
     document.getElementById('auth-section').style.display = 'none';
@@ -146,7 +170,8 @@
   }
 
   function fetchScript(accessToken) {
-    fetch('https://www.googleapis.com/drive/v3/files/' + DRIVE_FILE_ID + '?alt=media', {
+    var fileId = ENGINE_FILES[selectedEngine];
+    fetch('https://www.googleapis.com/drive/v3/files/' + fileId + '?alt=media', {
       headers: { 'Authorization': 'Bearer ' + accessToken }
     })
     .then(function(r) {
